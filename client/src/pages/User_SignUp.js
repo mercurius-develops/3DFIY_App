@@ -38,9 +38,9 @@ export const User_SignUp = () => {
   const [location, setLocation] = useState("");
   const [phoneNo, setPhoneNo] = useState("");
   const [cnic_number, setCnic_number] = useState("");
-    const [bio, setBio] = useState("");
+  const [bio, setBio] = useState("");
   const [cnic_pic, setCnic_pic] = useState("");
- const [sellerType, setSellerType] = useState("Regular");
+  const [sellerType, setSellerType] = useState("Regular");
   const [nextComp, setNextComp] = useState(true);
 
   useEffect(() => {
@@ -70,8 +70,6 @@ export const User_SignUp = () => {
       setErrMsg("Invalid Entry");
       return;
     }
-    
-
 
     try {
       const response = await fetch("http://localhost:8000/usersApi/signup", {
@@ -88,7 +86,7 @@ export const User_SignUp = () => {
           cnic_number,
           cnic_pic,
           sellerType,
-          bio
+          bio,
         }),
       });
       const data = await response.json();
@@ -104,7 +102,6 @@ export const User_SignUp = () => {
     }
   };
 
-
   const handleProfilePic = (e) => {
     setProfile_pic(e.target.files[0]);
   };
@@ -113,37 +110,34 @@ export const User_SignUp = () => {
     setCnic_pic(e.target.files[0]);
   };
 
-
-
   const nextCompBtn = () => {
     setNextComp(!nextComp);
   };
   const nextCompAsDesigner = () => {
-    setSellerType("Designer")
+    setSellerType("Designer");
     setNextComp(!nextComp);
-  }; 
-   const nextCompAsPrinterOwner = () => {
-     setSellerType("Printer Owner");
+  };
+  const nextCompAsPrinterOwner = () => {
+    setSellerType("Printer Owner");
     setNextComp(!nextComp);
   };
 
   const backCompBtn = () => {
     setNextComp(!nextComp);
   };
-console.log(
-   name,
-          username,
-          email,
-          pwd,
-          location,
-          profile_pic,
-          phoneNo,
-          cnic_number,
-          cnic_pic,
-          sellerType,
-          bio
-
-)
+  console.log(
+    name,
+    username,
+    email,
+    pwd,
+    location,
+    profile_pic,
+    phoneNo,
+    cnic_number,
+    cnic_pic,
+    sellerType,
+    bio
+  );
 
   return (
     <div class="flex min-h-full flex-col justify-center">
