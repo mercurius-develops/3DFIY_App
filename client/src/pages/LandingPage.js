@@ -1,13 +1,11 @@
 import React from 'react';
 
-function LandingPage() {
+export const LandingPage=()=> {
     return (
         <body className="font-['Poppins']">
-
             <nav className="">
                 <div className="mx-auto max-w-7xl mt-2">
                     <div className="flex h-16 items-center">
-
                         <div className="flex flex-1 items-center justify-between  sm:items-stretch sm:justify-start">
                             <div className="flex flex-shrink-0 items-center">
                                 <a href="#" className="text-2xl text-green-600 font-semibold">3Dify</a>
@@ -72,5 +70,3 @@ function LandingPage() {
 
     );
 }
-
-export default LandingPage;

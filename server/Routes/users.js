@@ -113,6 +113,36 @@ router.post("/login", async(req, res) => {
     }
 });
 
+router.post("/logout", async(req, res) => {
+    try {
+        // Check for authorization header (assuming token is sent in headers)
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        // Extract token from the header
+        const token = authHeader.split(" ")[1];
+
+        // Verify token validity
+        const decoded = jwt.verify(token, `${process.env.ACCESS_TOKEN_SECRET}`);
+
+
+        // Send successful logout response
+        res.json({ message: "Logout successful" });
+    } catch (err) {
+        // Handle errors
+        if (err instanceof jwt.TokenExpiredError) {
+            return res.status(401).json({ error: "Token expired" });
+        } else if (err instanceof jwt.JsonWebTokenError) {
+            return res.status(401).json({ error: "Invalid token" });
+        } else {
+            console.error(err);
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+});
+
 router.get("/designers", async(req, res) => {
     try {
         const category = await Designer.findAll({

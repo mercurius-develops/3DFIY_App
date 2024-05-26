@@ -1,15 +1,19 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { User_SignUp } from './pages/User_SignUp';
-import { Model_Upload } from './pages/Model_Upload';
-import { Login } from './pages/Login';
-import { ViewModel } from './pages/ViewModel';
+import { User_SignUp } from "./pages/User_SignUp";
+import { Model_Upload } from "./pages/Model_Upload";
+import { Login } from "./pages/Login";
+import { LandingPage } from "./pages/LandingPage";
+import { ViewModel } from "./pages/ViewModel";
+import { Dashboard } from "./pages/Dashboard";
 function App() {
   return (
     <div className="App">
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage></LandingPage>}></Route>
+          <Route path="/Dashboard" element={<Dashboard></Dashboard>}></Route>
+          
           <Route
             path="/User_SignUp"
             element={<User_SignUp></User_SignUp>}

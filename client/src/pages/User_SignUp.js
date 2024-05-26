@@ -275,14 +275,7 @@ export const User_SignUp = () => {
                   >
                     Password
                   </label>
-                  <FontAwesomeIcon
-                    icon={faCheck}
-                    className={validPwd ? styles.valid : styles.hide}
-                  />
-                  <FontAwesomeIcon
-                    icon={faTimes}
-                    className={validPwd || !pwd ? styles.hide : styles.invalid}
-                  />
+                  
                 </div>
                 <div class="mt-2">
                   <input
@@ -333,18 +326,7 @@ export const User_SignUp = () => {
                     {" "}
                     Confirm Password
                   </label>
-                  <FontAwesomeIcon
-                    icon={faCheck}
-                    className={
-                      validMatch && matchPwd ? styles.valid : styles.hide
-                    }
-                  />
-                  <FontAwesomeIcon
-                    icon={faTimes}
-                    className={
-                      validMatch || !matchPwd ? styles.hide : styles.invalid
-                    }
-                  />
+                  
                 </div>
                 <div class="mt-2">
                   <input

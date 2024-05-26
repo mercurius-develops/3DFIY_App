@@ -1,47 +1,49 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/Auth.module.css";
 import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
-
-import { jwtDecode, InvalidTokenError } from "jwt-decode"; 
-
-
-
+import { jwtDecode, InvalidTokenError } from "jwt-decode";
 
 export const Login = () => {
- 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [cookies, setCookie, removeCookie] = useCookies(null);
   const [check, setCheck] = useState("");
+  const navigate = useNavigate(); // Get useNavigate hook instance within the component
 
   const submitBtn = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:8000/usersApi/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch("http://localhost:8000/usersApi/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.detail) {
-      setError(data.detail);
-    } else {
-      window.sessionStorage.setItem("token", data.token);
+      if (data.detail) {
+        throw new Error(data.detail); // Handle login errors gracefully
+      }
+
+      // Successful login
+      window.sessionStorage.setItem("token", data.token); // Consider using a state management library for tokens
       console.log("Login successful");
-      window.location.reload();
+
+      navigate("/dashboard"); // Redirect to dashboard on success
+    } catch (error) {
+      console.error("Login failed:", error.message);
+      setError(error.message); // Display error message to the user
     }
   };
+
   console.log(check);
   return (
     <div class="flex min-h-full flex-col justify-centerlg">
-     
-
       <div class="sm:mx-auto sm:w-full sm:max-w-sm mt-24">
-       
         <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
           Sign in to your account
         </h2>
@@ -91,6 +93,12 @@ export const Login = () => {
               />
             </div>
           </div>
+
+          {error && (
+            <p className="text-red-500 text-sm mb-2 bg-red-100 py-2 px-3 rounded-lg font-semibold tracking-wide">
+              {error}
+            </p>
+          )}
 
           <div>
             <button
