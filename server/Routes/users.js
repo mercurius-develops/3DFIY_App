@@ -1,179 +1,213 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Designer = require("../models/Designer");
 const PrinterOwner = require("../models/Printer_Owner");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+const jwt = require("jsonwebtoken")
+const sequelize = require("../sequelize");
+// Setup multer to store files in memory
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage }).fields([
+    { name: "profile_pic", maxCount: 1 },
+    { name: "cnic_pic", maxCount: 1 },
+]);
 
-router.post("/signup", async(req, res) => {
-    try {
-        const {
-            name,
-            username,
-            email,
-            password,
-            location,
-            profile_pic,
-            phoneNo,
-            cnic_number,
-            cnic_pic,
-            sellerType,
-            bio,
-        } = req.body;
-
-        const salt = bcrypt.genSaltSync(10);
-        const hashedPassword = bcrypt.hashSync(password, salt);
-
-        const newUser = await User.create({
-            name,
-            username,
-            email,
-            password: hashedPassword,
-            location,
-            profile_pic,
-            phoneNo,
-            sellerType,
-        });
-
-        let seller;
-        if (sellerType === "Designer") {
-            seller = await Designer.create({
-                user_id: newUser.user_id,
-                cnic_number,
-                cnic_pic,
-                bio,
-            });
-        } else if (sellerType === "Printer Owner") {
-            seller = await PrinterOwner.create({
-                user_id: newUser.user_id,
-                cnic_number,
-                cnic_pic,
-                bio,
-            });
-        }
-
-        res.status(201).json({
-            message: "User and Seller created successfully",
-            data: { newUser, seller },
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal Server Error" });
+// Helper function to save files locally
+const saveFileLocally = (buffer, filename) => {
+    const uploadsDir = path.join(__dirname, "..", "uploads");
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
     }
-});
+    const filePath = path.join(uploadsDir, filename);
+    fs.writeFileSync(filePath, buffer);
+    return filePath;
+};
 
-router.post("/login", async(req, res) => {
-    const { email, password } = req.body;
-    try {
-        const user = await User.findOne({ where: { email } });
+// Signup route
+router.post("/signup", (req, res) => {
+            upload(req, res, async(err) => {
+                        if (err) {
+                            return res
+                                .status(400)
+                                .json({ error: "File upload error: " + err.message });
+                        }
 
-        if (!user) {
-            return res.status(401).json({ detail: "User does not exist!" });
-        }
+                        const {
+                            name,
+                            username,
+                            email,
+                            password,
+                            location,
+                            phoneNo,
+                            cnic_number,
+                            sellerType,
+                            bio,
+                        } = req.body;
 
-        const match = await bcrypt.compare(password, user.password);
+                        router.post("/signup", async(req, res) => {
+                                try {
+                                    const {
+                                        name,
+                                        username,
+                                        email,
+                                        password,
+                                        location,
+                                        profile_pic,
+                                        phoneNo,
+                                        cnic_number,
+                                        cnic_pic,
+                                        sellerType,
+                                        bio,
+                                    } = req.body;
 
-        if (match) {
-            let sellerId = null;
-            let tokenPayload = {
-                user_id: user.user_id,
-                email: user.email,
-                sellerType: user.sellerType,
-            };
+                                    const cnic_pic = req.files["cnic_pic"] ?
+                                        req.files["cnic_pic"][0].buffer :
+                                        null;
+                                    const profile_pic = req.files["profile_pic"] ?
+                                        req.files["profile_pic"][0].buffer :
+                                        null;
 
-            if (user.sellerType === "Designer") {
-                const designer = await Designer.findOne({
-                    where: { user_id: user.user_id },
-                });
-                sellerId = designer ? designer.designer_id : null;
-                tokenPayload.user_id = sellerId;
-            } else if (user.sellerType === "Printer Owner") {
-                const printerOwner = await PrinterOwner.findOne({
-                    where: { user_id: user.user_id },
-                });
-                sellerId = printerOwner ? printerOwner.printerOwner_id : null;
-                tokenPayload.user_id = sellerId;
-            }
+                                    try {
+                                        const salt = bcrypt.genSaltSync(10);
+                                        const hashedPassword = bcrypt.hashSync(password, salt);
 
-            const token = jwt.sign(
-                tokenPayload,
-                `${process.env.ACCESS_TOKEN_SECRET}`, {
-                    expiresIn: "1hr",
-                }
-            );
+                                        const newUser = await User.create({
+                                            name,
+                                            username,
+                                            email,
+                                            password: hashedPassword,
+                                            location,
+                                            profile_pic,
+                                            phoneNo,
+                                            sellerType,
+                                        });
 
-            res.json({ email: user.email, token });
-        } else {
-            res.status(401).json({ detail: "Login failed" });
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ detail: "Internal Server Error" });
-    }
-});
+                                        // Save the profile_pic and cnic_pic to the file system and get their paths
+                                        const cnic_pic_path = cnic_pic ?
+                                            saveFileLocally(cnic_pic, `cnic_${newUser.user_id}.jpg`) :
+                                            null;
+                                        const profile_pic_path = profile_pic ?
+                                            saveFileLocally(profile_pic, `profile_${newUser.user_id}.jpg`) :
+                                            null;
 
-router.post("/logout", async(req, res) => {
-    try {
-        // Check for authorization header (assuming token is sent in headers)
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
+                                        // Update the newUser with the profile_pic path
+                                        if (profile_pic_path) {
+                                            await newUser.update({ profile_pic: profile_pic_path });
+                                        }
 
-        // Extract token from the header
-        const token = authHeader.split(" ")[1];
+                                        // Create a Designer or Printer Owner based on sellerType
+                                        let seller;
+                                        if (sellerType === "Designer") {
+                                            seller = await Designer.create({
+                                                user_id: newUser.user_id,
+                                                cnic_number,
+                                                cnic_pic: cnic_pic_path,
+                                                bio,
+                                            });
+                                        } else if (sellerType === "Printer Owner") {
+                                            seller = await PrinterOwner.create({
+                                                user_id: newUser.user_id,
+                                                cnic_number,
+                                                cnic_pic: cnic_pic_path,
+                                                bio,
+                                            });
+                                        }
 
-        // Verify token validity
-        const decoded = jwt.verify(token, `${process.env.ACCESS_TOKEN_SECRET}`);
+                                        res.status(201).json({
+                                            message: "User and Seller created successfully",
+                                            data: { newUser, seller },
+                                        });
+                                    } catch (err) {
+                                        console.error(err);
+                                        res.status(500).json({ error: "Internal Server Error" });
+                                    }
+                                });
+                        });
+
+                    router.post("/login", async(req, res) => {
+                        const { email, password } = req.body;
+                        try {
+                            const user = await User.findOne({ where: { email } });
+
+                            if (!user) {
+                                return res.status(401).json({ detail: "User does not exist!" });
+                            }
+
+                            const match = await bcrypt.compare(password, user.password);
+
+                            if (match) {
+                                let sellerId = null;
+                                let tokenPayload = {
+                                    user_id: user.user_id,
+                                    email: user.email,
+                                    sellerType: user.sellerType,
+                                };
+
+                                if (user.sellerType === "Designer") {
+                                    const designer = await Designer.findOne({
+                                        where: { user_id: user.user_id },
+                                    });
+                                    sellerId = designer ? designer.designer_id : null;
+                                    tokenPayload.user_id = sellerId;
+                                } else if (user.sellerType === "Printer Owner") {
+                                    const printerOwner = await PrinterOwner.findOne({
+                                        where: { user_id: user.user_id },
+                                    });
+                                    sellerId = printerOwner ? printerOwner.printerOwner_id : null;
+                                    tokenPayload.user_id = sellerId;
+                                }
+
+                                const token = jwt.sign(
+                                    tokenPayload,
+                                    `${process.env.ACCESS_TOKEN_SECRET}`, {
+                                        expiresIn: "1hr",
+                                    }
+                                );
+
+                                res.json({ email: user.email, token });
+                            } else {
+                                res.status(401).json({ detail: "Login failed" });
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            res.status(500).json({ detail: "Internal Server Error" });
+                        }
+                    });
+
+                    router.get("/designers", async(req, res) => {
+                        try {
+                            const category = await Designer.findAll({
+                                order: [
+                                    ["createdAt", "DESC"]
+                                ],
+
+                            });
+                            res.json(category);
+                            console.error(err);
+                            res.status(500).json({ error: "Internal Server Error" });
+                        }
+                    });
 
 
-        // Send successful logout response
-        res.json({ message: "Logout successful" });
-    } catch (err) {
-        // Handle errors
-        if (err instanceof jwt.TokenExpiredError) {
-            return res.status(401).json({ error: "Token expired" });
-        } else if (err instanceof jwt.JsonWebTokenError) {
-            return res.status(401).json({ error: "Invalid token" });
-        } else {
-            console.error(err);
-            return res.status(500).json({ error: "Internal Server Error" });
-        }
-    }
-});
-
-router.get("/designers", async(req, res) => {
-    try {
-        const category = await Designer.findAll({
-            order: [
-                ["createdAt", "DESC"]
-            ],
-
-        });
-    } catch (err) {
-        res.json(category);
-        console.error(err);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
 
 
+                    router.get("/users", async(req, res) => {
+                        try {
+                            const category = await User.findAll({
+                                order: [
+                                    ["createdAt", "DESC"]
+                                ],
+                                limit: 5,
+                            });
+                            res.json(category); // Return 'categories' instead of 'category'
+                        } catch (err) {
+                            console.error(err);
+                            res.status(500).json({ error: "Internal Server Error" });
+                        }
+                    });
 
-
-router.get("/users", async(req, res) => {
-    try {
-        const category = await User.findAll({
-            order: [
-                ["createdAt", "DESC"]
-            ],
-            limit: 5,
-        });
-        res.json(category); // Return 'categories' instead of 'category'
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-
-module.exports = router;
+                    module.exports = router;

@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCookies } from "react-cookie";
-
 import { jwtDecode, InvalidTokenError } from "jwt-decode";
+
 export const Model_Upload = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -21,22 +21,26 @@ export const Model_Upload = () => {
   const [image, setImage] = useState(null);
   const [tags, setTags] = useState([]);
   const [tagsInput, setTagsInput] = useState("");
-  const [modelFile, setModelFile] = useState(null)
-  const [designer_id, setDesigner_Id] = useState(null)
-  const [category_id, setCategory_Id] = useState(null)
+  const[modelFile, setModelFile]= useState(null)
+const[designer_id, setDesigner_Id]=useState(null)
+const[category_id, setCategory_Id]=useState(null)
   const [checkToken, setCheckToken] = useState("");
 
   useEffect(() => {
     const token = window.sessionStorage.getItem("token");
+    console.log(token)
     setCheckToken(token || "");
     try {
       if (token) {
         const decodedToken = jwtDecode(token);
-
-
+      
+       
         const userId = decodedToken.user_id;
+        const email= decodedToken.email;
+        const sellerType=decodedToken.sellerType;
+console.log(userId, email, sellerType);
         setDesigner_Id(userId);
-
+       
       }
     } catch (error) {
       if (error instanceof InvalidTokenError) {
@@ -44,7 +48,9 @@ export const Model_Upload = () => {
       }
     }
   }, []);
-  console.log(designer_id)
+
+ 
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,8 +66,7 @@ export const Model_Upload = () => {
     };
     fetchData();
   }, []);
-  console.log(category_id)
-
+console.log("Testing")
   useEffect(() => {
     if (selectedCategory && selectedCategory !== "other") {
       const fetchSubCategories = async () => {
@@ -112,29 +117,30 @@ export const Model_Upload = () => {
     formData.append("image", image);
     formData.append("modelFile", modelFile);
 
-    try {
-      const response = await fetch("http://localhost:8000/modelApi/uploadModel", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      if (data.error) {
-        console.log(data.error);
-      } else {
-        console.log("Model uploaded successfully:", data);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Server Error");
+  try {
+    const response = await fetch("http://localhost:8000/modelApi/uploadModel", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+    if (data.error) {
+      console.log(data.error);
+    } else {
+      console.log("Model uploaded successfully:", data);
     }
-  };
+  } catch (error) {
+    console.error(error);
+    console.log("Server Error");
+  }
+};
 
   const handleFileChange = (e) => {
     setModelFile(e.target.files[0]);
   };
 
-
-
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+  };
 
   const Chip = ({ label, onDelete }) => (
     <div className="inline-block font-semibold py-2 pl-3 capitalize w-fit text-white px-2 rounded-full bg-blue-400">
@@ -167,7 +173,7 @@ export const Model_Upload = () => {
 
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
-    setCategory_Id(e.target.value)
+    setCategory_Id(e.target.value);
     setSelectedSubCategory(""); // Reset subcategory
     setSelectedSubSubCategory(""); // Reset sub-subcategory
   };
@@ -182,7 +188,6 @@ export const Model_Upload = () => {
     setSelectedSubSubCategory(e.target.value);
     setCategory_Id(e.target.value);
   };
-
   return (
     <div className="main_div">
       <div className="form_div">
