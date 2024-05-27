@@ -34,15 +34,15 @@ export const User_SignUp = () => {
   const [errMsg, setErrMsg] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const [profile_pic, setProfile_pic] = useState("");
+  const [profile_pic, setProfile_pic] = useState(null);
   const [location, setLocation] = useState("");
   const [phoneNo, setPhoneNo] = useState("");
   const [cnic_number, setCnic_number] = useState("");
-  const [bio, setBio] = useState("");
+    const [bio, setBio] = useState("");
   const [cnic_pic, setCnic_pic] = useState("");
-  const [sellerType, setSellerType] = useState("Regular");
+ const [sellerType, setSellerType] = useState("Regular");
   const [nextComp, setNextComp] = useState(true);
-
+console.log(cnic_pic)
   useEffect(() => {
     if (userRef.current) {
       userRef.current.focus();
@@ -62,6 +62,9 @@ export const User_SignUp = () => {
     setErrMsg("");
   }, [username, pwd, matchPwd]);
 
+
+  // Your existing state variables and useEffect hooks here
+
   const SubmitBtn = async (e) => {
     e.preventDefault();
     const v1 = USER_REGEX.test(username);
@@ -70,6 +73,8 @@ export const User_SignUp = () => {
       setErrMsg("Invalid Entry");
       return;
     }
+    
+
 
     try {
       const response = await fetch("http://localhost:8000/usersApi/signup", {
@@ -86,7 +91,7 @@ export const User_SignUp = () => {
           cnic_number,
           cnic_pic,
           sellerType,
-          bio,
+          bio
         }),
       });
       const data = await response.json();

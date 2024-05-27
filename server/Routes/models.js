@@ -3,9 +3,11 @@ const router = express.Router();
 const multer = require("multer");
 const Model = require("../models/Model");
 const path = require("path");
+const fs = require("fs");
+const sequelize = require("../sequelize");
 
+// Configure multer to store files in memory
 const storage = multer.memoryStorage();
-
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
@@ -29,12 +31,6 @@ const upload = multer({
       "image/png",
     ];
 
-    console.log(`Received file: ${file.originalname}`);
-    console.log(
-      `File extension: ${path.extname(file.originalname).toLowerCase()}`
-    );
-    console.log(`MIME type: ${file.mimetype}`);
-
     const mimetype = mimetypes.includes(file.mimetype);
 
     if (extname && mimetype) {
@@ -47,6 +43,12 @@ const upload = multer({
   },
 });
 
+// Define the uploads directory
+const uploadsDir = path.join(__dirname, "..", "uploads", "models");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 router.post(
   "/uploadModel",
   upload.fields([
@@ -58,6 +60,20 @@ router.post(
       const { category_id, designer_id, name, description, price, is_free } =
         req.body;
 
+      // Save model file and image locally
+      const modelFilePath = saveFileLocally(
+        req.files["modelFile"][0].buffer,
+        `${name}_model_${Date.now()}.${path.extname(
+          req.files["modelFile"][0].originalname
+        )}`
+      );
+      const imagePath = saveFileLocally(
+        req.files["image"][0].buffer,
+        `${name}_image_${Date.now()}.${path.extname(
+          req.files["image"][0].originalname
+        )}`
+      );
+
       const newModel = await Model.create({
         category_id,
         designer_id,
@@ -65,8 +81,8 @@ router.post(
         description,
         price,
         is_free,
-        model_file: req.files["modelFile"][0].buffer,
-        image: req.files["image"][0].buffer,
+        model_file: modelFilePath,
+        image: imagePath,
         likes_count: 0,
         download_count: 0,
       });
@@ -79,7 +95,11 @@ router.post(
   }
 );
 
-
+const saveFileLocally = (buffer, filename) => {
+  const filePath = path.join(uploadsDir, filename);
+  fs.writeFileSync(filePath, buffer);
+  return filePath;
+};
 
 router.get("/models", async (req, res) => {
   try {
@@ -96,6 +116,76 @@ router.get("/models", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch models" });
+  }
+});
+
+
+router.get("/models/:designerId", async (req, res) => {
+  const { designerId } = req.params;
+  console.log("swsw" ,designerId)
+
+  try {
+    const models = await Model.findAll({
+      where: { designer_id: designerId },
+    });
+
+    res.json(models);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/model/:modelId", async (req, res) => {
+  const { modelId } = req.params;
+
+  try {
+    const model = await Model.findByPk(modelId);
+    if (!model) {
+      return res.status(404).json({ error: "Model not found" });
+    }
+    res.json(model);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/modelDetail/:modelId", async (req, res) => {
+  const { modelId } = req.params;
+
+  try {
+    const [results] = await sequelize.query(
+      `
+      SELECT 
+        "Users".name AS name,
+        "Users".location AS location,
+        "Users".profile_pic AS profile_pic,
+        "Models".description,
+        "Models".price,
+        "Models".is_Free
+      FROM 
+        "Models"
+      JOIN 
+        "Designers" ON "Models".designer_id = "Designers".designer_id
+      JOIN 
+        "Users" ON "Designers".user_id = "Users".user_id
+      WHERE 
+        "Models".model_id = :modelId
+      `,
+      {
+        replacements: { modelId },
+      }
+    );
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Model not found" });
+    }
+
+    res.json(results[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
