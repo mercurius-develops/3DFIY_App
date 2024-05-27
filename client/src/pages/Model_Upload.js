@@ -21,9 +21,9 @@ export const Model_Upload = () => {
   const [image, setImage] = useState(null);
   const [tags, setTags] = useState([]);
   const [tagsInput, setTagsInput] = useState("");
-  const[modelFile, setModelFile]= useState(null)
-const[designer_id, setDesigner_Id]=useState(null)
-const[category_id, setCategory_Id]=useState(null)
+  const [modelFile, setModelFile] = useState(null)
+  const [designer_id, setDesigner_Id] = useState(null)
+  const [category_id, setCategory_Id] = useState(null)
   const [checkToken, setCheckToken] = useState("");
 
   useEffect(() => {
@@ -32,11 +32,11 @@ const[category_id, setCategory_Id]=useState(null)
     try {
       if (token) {
         const decodedToken = jwtDecode(token);
-      
-       
+
+
         const userId = decodedToken.user_id;
         setDesigner_Id(userId);
-       
+
       }
     } catch (error) {
       if (error instanceof InvalidTokenError) {
@@ -100,38 +100,38 @@ const[category_id, setCategory_Id]=useState(null)
     }
   }, [selectedSubCategory]);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  const formData = new FormData();
-  formData.append("category_id", category_id);
-  formData.append("designer_id", designer_id);
-  formData.append("name", name);
-  formData.append("description", description);
-  formData.append("price", price);
-  formData.append("is_free", isFree);
-  formData.append("image", image);
-  formData.append("modelFile", modelFile);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("category_id", category_id);
+    formData.append("designer_id", designer_id);
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("is_free", isFree);
+    formData.append("image", image);
+    formData.append("modelFile", modelFile);
 
-  try {
-    const response = await fetch("http://localhost:8000/modelApi/uploadModel", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (data.error) {
-      console.log(data.error);
-    } else {
-      console.log("Model uploaded successfully:", data);
+    try {
+      const response = await fetch("http://localhost:8000/modelApi/uploadModel", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.error) {
+        console.log(data.error);
+      } else {
+        console.log("Model uploaded successfully:", data);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Server Error");
     }
-  } catch (error) {
-    console.error(error);
-    console.log("Server Error");
-  }
-};
+  };
 
-const handleFileChange = (e) => {
-  setModelFile(e.target.files[0]);
-};
+  const handleFileChange = (e) => {
+    setModelFile(e.target.files[0]);
+  };
 
 
 
@@ -381,7 +381,7 @@ const handleFileChange = (e) => {
         <div>
           <div>
             <label htmlFor="image">Upload Image</label>
-            <input type="file" onChange={(e)=>setImage(e.target.files[0])} />
+            <input type="file" onChange={(e) => setImage(e.target.files[0])} />
           </div>
         </div>
         <button onClick={handleSubmit}>Upload Model</button>
