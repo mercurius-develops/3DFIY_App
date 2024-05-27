@@ -6,13 +6,16 @@ import { Login } from "./pages/Login";
 import { LandingPage } from "./pages/LandingPage";
 import { ViewModel } from "./pages/ViewModel";
 import { Dashboard } from "./pages/Dashboard";
+import { Terms } from "./pages/Terms";
+
 function App() {
   return (
-    <div className="App">
+    <div className="font-['Poppins']">
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage></LandingPage>}></Route>
           <Route path="/Dashboard" element={<Dashboard></Dashboard>}></Route>
+          <Route path="/TermsCondition" element={<Terms></Terms>}></Route>
           
           <Route
             path="/User_SignUp"
