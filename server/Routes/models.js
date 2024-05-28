@@ -57,9 +57,19 @@ router.post(
   ]),
   async (req, res) => {
     try {
-      const { category_id, designer_id, name, description, price, is_free } =
+      const { category_id, designer_id, name, description, price, is_free, tags } =
         req.body;
-
+        let tagsArray;
+        if (Array.isArray(tags)) {
+          tagsArray = tags;
+        } else {
+          try {
+            tagsArray = JSON.parse(tags);
+          } catch (e) {
+            tagsArray = tags.split(",").map((tag) => tag.trim());
+          }
+        }
+console.log(tags)
       // Save model file and image locally
       const modelFilePath = saveFileLocally(
         req.files["modelFile"][0].buffer,
@@ -81,6 +91,7 @@ router.post(
         description,
         price,
         is_free,
+        tags: tagsArray,
         model_file: modelFilePath,
         image: imagePath,
         likes_count: 0,
@@ -100,6 +111,129 @@ const saveFileLocally = (buffer, filename) => {
   fs.writeFileSync(filePath, buffer);
   return filePath;
 };
+
+
+
+router.put(
+  "/updateModel/:modelId",
+  upload.fields([
+    // ... same upload configuration as before
+    { name: "modelFile", maxCount: 1 },
+    { name: "image", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const { modelId } = req.params;
+       const {
+         category_id,
+         designer_id,
+         name,
+         description,
+         price,
+         is_free,
+         tags,
+       } = req.body;
+      let tagsArray;
+
+      if (Array.isArray(tags)) {
+        tagsArray = tags;
+      } else {
+        try {
+          tagsArray = JSON.parse(tags);
+        } catch (e) {
+          tagsArray = tags.split(",").map((tag) => tag.trim());
+        }
+      }
+
+      // Find the model to be updated
+      const modelToUpdate = await Model.findByPk(modelId);
+      if (!modelToUpdate) {
+        return res.status(404).json({ error: "Model not found" });
+      }
+
+      // Update model data (including tags)
+      modelToUpdate.category_id = category_id;
+      modelToUpdate.designer_id = designer_id; // Assuming designer cannot change this
+      modelToUpdate.name = name;
+      modelToUpdate.description = description;
+      modelToUpdate.price = price;
+      modelToUpdate.is_free = is_free;
+      modelToUpdate.tags = tagsArray;
+
+      // Handle file updates (optional)
+      if (req.files["modelFile"]) {
+        // Delete existing model file if present
+        const existingFilePath = modelToUpdate.model_file;
+        if (existingFilePath) {
+          fs.unlinkSync(existingFilePath);
+        }
+        // Save the new model file
+        const newModelFilePath = saveFileLocally(
+          req.files["modelFile"][0].buffer,
+          `${name}_model_${Date.now()}.${path.extname(
+            req.files["modelFile"][0].originalname
+          )}`
+        );
+        modelToUpdate.model_file = newModelFilePath;
+      }
+
+      if (req.files["image"]) {
+        // Delete existing image file if present
+        const existingImagePath = modelToUpdate.image;
+        if (existingImagePath) {
+          fs.unlinkSync(existingImagePath);
+        }
+        // Save the new image file
+        const newImagePath = saveFileLocally(
+          req.files["image"][0].buffer,
+          `${name}_image_${Date.now()}.${path.extname(
+            req.files["image"][0].originalname
+          )}`
+        );
+        modelToUpdate.image = newImagePath;
+      }
+
+      // Save the updated model
+      await modelToUpdate.save();
+
+      res.status(200).json(modelToUpdate);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to update model" });
+    }
+  }
+);
+
+
+router.delete("/deleteModel/:modelId", async (req, res) => {
+  const { modelId } = req.params;
+
+  try {
+  
+    const modelToDelete = await Model.findByPk(modelId);
+    if (!modelToDelete) {
+      return res.status(404).json({ error: "Model not found" });
+    }
+
+
+    if (modelToDelete.model_file) {
+      fs.unlinkSync(modelToDelete.model_file);
+    }
+    if (modelToDelete.image) {
+      fs.unlinkSync(modelToDelete.image);
+    }
+
+
+    await modelToDelete.destroy();
+
+    res.status(200).json({ message: "Model deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete model" });
+  }
+});
+
+
 
 router.get("/models", async (req, res) => {
   try {
@@ -158,12 +292,15 @@ router.get("/modelDetail/:modelId", async (req, res) => {
     const [results] = await sequelize.query(
       `
       SELECT 
-        "Users".name AS name,
-        "Users".location AS location,
+        "Users".name AS user_name,
+        "Users".location AS user_location,
         "Users".profile_pic AS profile_pic,
+        "Models".name As model_name,
         "Models".description,
         "Models".price,
-        "Models".is_Free
+        "Models".is_Free,
+        "Models".tags,
+        "Models".image
       FROM 
         "Models"
       JOIN 

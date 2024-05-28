@@ -1,42 +1,143 @@
 import React, { useEffect, useState } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { jwtDecode, InvalidTokenError } from "jwt-decode";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useCookies } from "react-cookie";
-import { jwtDecode, InvalidTokenError } from "jwt-decode";
-
-export const Model_Upload = () => {
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [customCategory, setCustomCategory] = useState("");
-  const [subcategories, setSubCategories] = useState([]);
-  const [selectedSubCategory, setSelectedSubCategory] = useState("");
-  const [customSubCategory, setCustomSubCategory] = useState("");
-  const [subSubcategories, setSubSubCategories] = useState([]);
-  const [selectedSubSubCategory, setSelectedSubSubCategory] = useState("");
-  const [customSubSubCategory, setCustomSubSubCategory] = useState("");
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [isFree, setIsFree] = useState(false);
+export const UpdateModel = () => {
+  const { modelId } = useParams();
+  const location = useLocation();
+  const { model } = location.state || {};
+  const [name, setName] = useState(model?.model_name || "");
+  const [description, setDescription] = useState(model?.description || "");
+  const [price, setPrice] = useState(model?.price || "");
+  const [isFree, setIsFree] = useState(model?.isFree || false);
   const [image, setImage] = useState(null);
-  const [tags, setTags] = useState([]);
+  const [tags, setTags] = useState(model?.tags || []);
   const [tagsInput, setTagsInput] = useState("");
   const [modelFile, setModelFile] = useState(null);
   const [designer_id, setDesigner_Id] = useState(null);
-  const [category_id, setCategory_Id] = useState(null);
+  const [category_id, setCategory_Id] = useState(model?.category_id || null);
   const [checkToken, setCheckToken] = useState("");
+   const [categories, setCategories] = useState([]);
+   const [selectedCategory, setSelectedCategory] = useState("");
+   const [customCategory, setCustomCategory] = useState("");
+   const [subcategories, setSubCategories] = useState([]);
+   const [selectedSubCategory, setSelectedSubCategory] = useState("");
+   const [customSubCategory, setCustomSubCategory] = useState("");
+   const [subSubcategories, setSubSubCategories] = useState([]);
+   const [selectedSubSubCategory, setSelectedSubSubCategory] = useState("");
+   const [customSubSubCategory, setCustomSubSubCategory] = useState("");
+console.log(tags)
+  const navigate = useNavigate();
+
+   const Chip = ({ label, onDelete }) => (
+     <div className="inline-block font-semibold py-2 pl-3 capitalize w-fit text-white px-2 rounded-full bg-blue-400">
+       <span>{label}</span>
+       <button
+         className="ml-2 text-gray-100 rounded-full text-center font-bold"
+         onClick={onDelete}
+       >
+         <FontAwesomeIcon className="w-3 text-red-600" icon={faXmark} />
+       </button>
+     </div>
+   );
+
+   const handleAddTags = (e) => {
+     e.preventDefault();
+     if (tagsInput.trim() !== "" && !tags.includes(tagsInput)) {
+       if (tags.length < 5) {
+         setTags([...tags, tagsInput]);
+         setTagsInput("");
+       } else {
+         alert("You can only add up to 5 skills.");
+       }
+     }
+   };
+
+
+   useEffect(() => {
+     const fetchData = async () => {
+       try {
+         const response = await fetch(
+           "http://localhost:8000/categoryApi/category"
+         );
+         const categoryData = await response.json();
+         setCategories(categoryData);
+       } catch (err) {
+         console.log(err);
+       }
+     };
+     fetchData();
+   }, []);
+   console.log("Testing");
+   useEffect(() => {
+     if (selectedCategory && selectedCategory !== "other") {
+       const fetchSubCategories = async () => {
+         try {
+           const response = await fetch(
+             `http://localhost:8000/categoryApi/subcategories/${selectedCategory}`
+           );
+           const subCategoryData = await response.json();
+           setSubCategories(subCategoryData);
+         } catch (err) {
+           console.log(err);
+         }
+       };
+       fetchSubCategories();
+     } else {
+       setSubCategories([]);
+     }
+   }, [selectedCategory]);
+
+   useEffect(() => {
+     if (selectedSubCategory && selectedSubCategory !== "other") {
+       const fetchSubSubCategories = async () => {
+         try {
+           const response = await fetch(
+             `http://localhost:8000/categoryApi/subcategories/${selectedSubCategory}`
+           );
+           const subSubCategoryData = await response.json();
+           setSubSubCategories(subSubCategoryData);
+         } catch (err) {
+           console.log(err);
+         }
+       };
+       fetchSubSubCategories();
+     } else {
+       setSubSubCategories([]);
+     }
+   }, [selectedSubCategory]);
+
+
+    const handleCategoryChange = (e) => {
+      setSelectedCategory(e.target.value);
+      setCategory_Id(e.target.value);
+      setSelectedSubCategory(""); // Reset subcategory
+      setSelectedSubSubCategory(""); // Reset sub-subcategory
+    };
+
+    const handleSubCategoryChange = (e) => {
+      setSelectedSubCategory(e.target.value);
+      setCategory_Id(e.target.value);
+      setSelectedSubSubCategory(""); // Reset sub-subcategory
+    };
+
+    const handleSubSubCategoryChange = (e) => {
+      setSelectedSubSubCategory(e.target.value);
+      setCategory_Id(e.target.value);
+    };
+   const handleDeleteTags = (tagsToDelete) => {
+     const updatedTags = tags.filter((tag) => tag !== tagsToDelete);
+     setTags(updatedTags);
+   };
 
   useEffect(() => {
     const token = window.sessionStorage.getItem("token");
-    console.log(token)
     setCheckToken(token || "");
     try {
       if (token) {
         const decodedToken = jwtDecode(token);
         const userId = decodedToken.user_id;
-        const email= decodedToken.email;
-        const sellerType=decodedToken.sellerType;
-console.log(userId, email, sellerType);
         setDesigner_Id(userId);
       }
     } catch (error) {
@@ -45,62 +146,6 @@ console.log(userId, email, sellerType);
       }
     }
   }, []);
-
- 
-console.log(isFree, "ifgee")
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:8000/categoryApi/category"
-        );
-        const categoryData = await response.json();
-        setCategories(categoryData);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchData();
-  }, []);
-console.log("Testing")
-  useEffect(() => {
-    if (selectedCategory && selectedCategory !== "other") {
-      const fetchSubCategories = async () => {
-        try {
-          const response = await fetch(
-            `http://localhost:8000/categoryApi/subcategories/${selectedCategory}`
-          );
-          const subCategoryData = await response.json();
-          setSubCategories(subCategoryData);
-        } catch (err) {
-          console.log(err);
-        }
-      };
-      fetchSubCategories();
-    } else {
-      setSubCategories([]);
-    }
-  }, [selectedCategory]);
-
-  useEffect(() => {
-    if (selectedSubCategory && selectedSubCategory !== "other") {
-      const fetchSubSubCategories = async () => {
-        try {
-          const response = await fetch(
-            `http://localhost:8000/categoryApi/subcategories/${selectedSubCategory}`
-          );
-          const subSubCategoryData = await response.json();
-          setSubSubCategories(subSubCategoryData);
-        } catch (err) {
-          console.log(err);
-        }
-      };
-      fetchSubSubCategories();
-    } else {
-      setSubSubCategories([]);
-    }
-  }, [selectedSubCategory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,15 +156,15 @@ console.log("Testing")
     formData.append("description", description);
     formData.append("price", price);
     formData.append("is_free", isFree);
-    formData.append("image", image);
-     formData.append("tags", tags);
-    formData.append("modelFile", modelFile);
+    formData.append("tags", tags);
+    if (image) formData.append("image", image);
+    if (modelFile) formData.append("modelFile", modelFile);
 
     try {
       const response = await fetch(
-        "http://localhost:8000/modelApi/uploadModel",
+        `http://localhost:8000/modelApi/updateModel/${modelId}`,
         {
-          method: "POST",
+          method: "PUT",
           body: formData,
         }
       );
@@ -127,7 +172,8 @@ console.log("Testing")
       if (data.error) {
         console.log(data.error);
       } else {
-        console.log("Model uploaded successfully:", data);
+        console.log("Model updated successfully:", data);
+        navigate(`/model/${modelId}`); 
       }
     } catch (error) {
       console.error(error);
@@ -135,69 +181,10 @@ console.log("Testing")
     }
   };
 
-  const handleFileChange = (e) => {
-    setModelFile(e.target.files[0]);
-  };
-
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
-  };
-
-  const Chip = ({ label, onDelete }) => (
-    <div className="inline-block font-semibold py-2 pl-3 capitalize w-fit text-white px-2 rounded-full bg-blue-400">
-      <span>{label}</span>
-      <button
-        className="ml-2 text-gray-100 rounded-full text-center font-bold"
-        onClick={onDelete}
-      >
-        <FontAwesomeIcon className="w-3 text-red-600" icon={faXmark} />
-      </button>
-    </div>
-  );
-
-  const handleAddTags = (e) => {
-    e.preventDefault();
-    if (tagsInput.trim() !== "" && !tags.includes(tagsInput)) {
-      if (tags.length < 5) {
-        setTags([...tags, tagsInput]);
-        setTagsInput("");
-      } else {
-        alert("You can only add up to 5 skills.");
-      }
-    }
-  };
-
-  const handleDeleteTags = (tagsToDelete) => {
-    const updatedTags = tags.filter((tag) => tag !== tagsToDelete);
-    setTags(updatedTags);
-  };
-
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
-    setCategory_Id(e.target.value);
-    setSelectedSubCategory(""); // Reset subcategory
-    setSelectedSubSubCategory(""); // Reset sub-subcategory
-  };
-
-  const handleSubCategoryChange = (e) => {
-    setSelectedSubCategory(e.target.value);
-    setCategory_Id(e.target.value);
-    setSelectedSubSubCategory(""); // Reset sub-subcategory
-  };
-
-  const handleSubSubCategoryChange = (e) => {
-    setSelectedSubSubCategory(e.target.value);
-    setCategory_Id(e.target.value);
-  };
-
-  
-  const handleIsFreeChange = (e) => {
-    setIsFree(e.target.value === "true");
-  };
   return (
     <div className="main_div">
       <div className="form_div">
-        <form action="">
+        <form onSubmit={handleSubmit}>
           <div>
             <label htmlFor="name">Enter Name</label>
             <input
@@ -319,34 +306,32 @@ console.log("Testing")
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
-          <label htmlFor="is_free">Is It Paid?</label>
-          <input
-            type="radio"
-            value={false}
-            checked={!isFree}
-            onChange={handleIsFreeChange}
-          />
-          <span className="ml-2">No</span>
-          <input
-            type="radio"
-            value={true}
-            checked={isFree}
-            onChange={handleIsFreeChange}
-          />
-          <span className="ml-2">Yes</span>
-          {isFree === true ? (
-            <>
-              <div>
-                <label htmlFor="price">Enter Price</label>
-                <input
-                  type="text"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-              </div>
-            </>
-          ) : (
-            ""
+          <div>
+            <label htmlFor="is_free">Is It Paid?</label>
+            <input
+              type="radio"
+              value={false}
+              checked={!isFree}
+              onChange={() => setIsFree(false)}
+            />
+            Paid
+            <input
+              type="radio"
+              value={true}
+              checked={isFree}
+              onChange={() => setIsFree(true)}
+            />
+            Free
+          </div>
+          {!isFree && (
+            <div>
+              <label htmlFor="price">Enter Price</label>
+              <input
+                type="text"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
           )}
           <div>
             <label htmlFor="tags">Enter Tags</label>
@@ -354,17 +339,17 @@ console.log("Testing")
               <div className="flex items-center space-x-4">
                 <input
                   type="text"
-                  
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
                   placeholder="Enter skill..."
                   className="border border-gray-300 px-3 py-2 rounded-md w-64 focus:outline-none focus:border-blue-500"
                 />
                 <button
-                  onClick={handleAddTags}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+                  onClick={
+                    handleAddTags
+                  }
                 >
-                  Add Tags
+                  Add Tag
                 </button>
               </div>
               <div className="space-x-2">
@@ -377,25 +362,22 @@ console.log("Testing")
                 ))}
               </div>
             </div>
-            <div>
-              <label htmlFor="modelFile">Upload Your 3D Model</label>
-              <input
-                onChange={handleFileChange}
-                type="file"
-                name="modelFile"
-                id=""
-              />
-            </div>
           </div>
-        </form>
-        <div>
           <div>
             <label htmlFor="image">Upload Image</label>
             <input type="file" onChange={(e) => setImage(e.target.files[0])} />
           </div>
-        </div>
-        <button onClick={handleSubmit}>Upload Model</button>
+          <div>
+            <label htmlFor="modelFile">Upload Model File</label>
+            <input
+              type="file"
+              onChange={(e) => setModelFile(e.target.files[0])}
+            />
+          </div>
+          <button type="submit">Update Model</button>
+        </form>
       </div>
     </div>
   );
 };
+
