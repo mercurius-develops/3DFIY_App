@@ -1,9 +1,13 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { User_SignUp } from './pages/User_SignUp';
-import { Model_Upload } from './pages/Model_Upload';
-import { Login } from './pages/Login';
-import { ViewModel } from './pages/ViewModel';
+import { User_SignUp } from "./pages/User_SignUp";
+import { Model_Upload } from "./pages/Model_Upload";
+import { Login } from "./pages/Login";
+import { LandingPage } from "./pages/LandingPage";
+import { ViewModel } from "./pages/ViewModel";
+import { Dashboard } from "./pages/Dashboard";
+import { Terms } from "./pages/Terms";
+
 import { DesignerProfile } from './pages/DesignerProfile';
 import { ModelDetail } from './pages/ModelDetail';
 import { UpdateModel } from './Management/UpdateModel';
@@ -13,6 +17,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage></LandingPage>}></Route>
+          <Route path="/Dashboard" element = { < Dashboard />}></Route >
+          <Route path="/TermsCondition" element = { <Terms/>}></Route >
           <Route path="/User_SignUp" element={<User_SignUp />} />
           <Route path="/Model_Upload" element={<Model_Upload />} />
           <Route path="/Login" element={<Login />} />

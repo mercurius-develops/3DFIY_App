@@ -1,27 +1,26 @@
 {
-  "development": {
-    "username": "postgres",
-    "password": "apple",
-    "database": "d3fiy",
-    "host": "127.0.0.1",
-    "dialect": "postgres",
-    "logging": false
-  },
-  "test": {
-    "username": "postgres",
-    "password": "apple",
-    "database": "d3fiy_test",
-    "host": "127.0.0.1",
-    "dialect": "postgres",
-    "logging": false
-  },
-  "production": {
-    "username": "postgres",
-    "password": "apple",
-    "database": "d3fiy_production",
-    "host": "127.0.0.1",
-    "dialect": "postgres",
-    "logging": false
-  }
+    "development": {
+        "username": "postgres",
+        "password": "6969",
+        "database": "d3fiy",
+        "host": "127.0.0.1",
+        "dialect": "postgres",
+        "logging": false
+    },
+    "test": {
+        "username": "postgres",
+        "password": "6969",
+        "database": "d3fiy_test",
+        "host": "127.0.0.1",
+        "dialect": "postgres",
+        "logging": false
+    },
+    "production": {
+        "username": "postgres",
+        "password": "6969",
+        "database": "d3fiy_production",
+        "host": "127.0.0.1",
+        "dialect": "postgres",
+        "logging": false
+    }
 }
-
