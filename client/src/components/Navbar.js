@@ -15,7 +15,7 @@ export const Navbar = () => {
         <div class="flex h-16 items-center">
           <div class="flex flex-1 items-center justify-between  sm:items-stretch sm:justify-start">
             <div class="flex flex-shrink-0 items-center">
-              <a href="#" class="text-2xl text-[#539e60] font-semibold">
+              <a href="/" class="text-2xl text-[#539e60] font-semibold">
                 3Dify
               </a>
             </div>

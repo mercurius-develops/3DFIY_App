@@ -59,17 +59,17 @@ router.post(
     try {
       const { category_id, designer_id, name, description, price, is_free, tags } =
         req.body;
-        let tagsArray;
-        if (Array.isArray(tags)) {
-          tagsArray = tags;
-        } else {
-          try {
-            tagsArray = JSON.parse(tags);
-          } catch (e) {
-            tagsArray = tags.split(",").map((tag) => tag.trim());
-          }
+      let tagsArray;
+      if (Array.isArray(tags)) {
+        tagsArray = tags;
+      } else {
+        try {
+          tagsArray = JSON.parse(tags);
+        } catch (e) {
+          tagsArray = tags.split(",").map((tag) => tag.trim());
         }
-console.log(tags)
+      }
+      console.log(tags)
       // Save model file and image locally
       const modelFilePath = saveFileLocally(
         req.files["modelFile"][0].buffer,
@@ -124,15 +124,15 @@ router.put(
   async (req, res) => {
     try {
       const { modelId } = req.params;
-       const {
-         category_id,
-         designer_id,
-         name,
-         description,
-         price,
-         is_free,
-         tags,
-       } = req.body;
+      const {
+        category_id,
+        designer_id,
+        name,
+        description,
+        price,
+        is_free,
+        tags,
+      } = req.body;
       let tagsArray;
 
       if (Array.isArray(tags)) {
@@ -209,7 +209,7 @@ router.delete("/deleteModel/:modelId", async (req, res) => {
   const { modelId } = req.params;
 
   try {
-  
+
     const modelToDelete = await Model.findByPk(modelId);
     if (!modelToDelete) {
       return res.status(404).json({ error: "Model not found" });
@@ -256,7 +256,7 @@ router.get("/models", async (req, res) => {
 
 router.get("/models/:designerId", async (req, res) => {
   const { designerId } = req.params;
-  console.log("swsw" ,designerId)
+  console.log("swsw", designerId)
 
   try {
     const models = await Model.findAll({

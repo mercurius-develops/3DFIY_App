@@ -145,6 +145,7 @@ export const Login = () => {
               <div>
                 <button
                   type="submit"
+                  onClick={() => navigate('/ViewModels')}
                   className="flex w-full justify-center rounded-md bg-[#539e60] px-3 py-1.5 text-sm font-medium leading-6 text-white shadow-sm hover:bg-[#306e3a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   Sign in

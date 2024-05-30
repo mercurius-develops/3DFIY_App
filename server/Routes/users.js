@@ -9,7 +9,6 @@ const fs = require("fs");
 const path = require("path");
 const jwt = require("jsonwebtoken")
 
-// Setup multer to store files in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).fields([
     { name: "profile_pic", maxCount: 1 },
@@ -27,90 +26,68 @@ const saveFileLocally = (buffer, filename) => {
     return filePath;
 };
 
-// Signup route
-router.post("/signup", (req, res) => {
-    upload(req, res, async(err) => {
-        if (err) {
-            return res
-                .status(400)
-                .json({ error: "File upload error: " + err.message });
+router.post("/signup", upload, async(req, res) => {
+    try {
+        if (!req.files || !req.files["cnic_pic"] || !req.files["profile_pic"]) {
+            return res.status(400).json({ error: "File upload failed" });
         }
 
-        const {
+        const { name, username, email, password, location, phoneNo, cnic_number, sellerType, bio } = req.body;
+
+        const cnic_pic = req.files["cnic_pic"] ? req.files["cnic_pic"][0].buffer : null;
+        const profile_pic = req.files["profile_pic"] ? req.files["profile_pic"][0].buffer : null;
+
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+
+        // Create a new user
+        const newUser = await User.create({
             name,
             username,
             email,
-            password,
+            password: hashedPassword,
             location,
             phoneNo,
-            cnic_number,
             sellerType,
-            bio,
-        } = req.body;
+        });
 
-        const cnic_pic = req.files["cnic_pic"] ?
-            req.files["cnic_pic"][0].buffer :
-            null;
-        const profile_pic = req.files["profile_pic"] ?
-            req.files["profile_pic"][0].buffer :
-            null;
+        // Save the profile_pic and cnic_pic to the file system and get their paths
+        const cnic_pic_path = cnic_pic ? saveFileLocally(cnic_pic, `cnic_${newUser.user_id}.jpg`) : null;
+        const profile_pic_path = profile_pic ? saveFileLocally(profile_pic, `profile_${newUser.user_id}.jpg`) : null;
 
-        try {
-            const salt = bcrypt.genSaltSync(10);
-            const hashedPassword = bcrypt.hashSync(password, salt);
-
-            // Create a new user
-            const newUser = await User.create({
-                name,
-                username,
-                email,
-                password: hashedPassword,
-                location,
-                phoneNo,
-                sellerType,
-            });
-
-            // Save the profile_pic and cnic_pic to the file system and get their paths
-            const cnic_pic_path = cnic_pic ?
-                saveFileLocally(cnic_pic, `cnic_${newUser.user_id}.jpg`) :
-                null;
-            const profile_pic_path = profile_pic ?
-                saveFileLocally(profile_pic, `profile_${newUser.user_id}.jpg`) :
-                null;
-
-            // Update the newUser with the profile_pic path
-            if (profile_pic_path) {
-                await newUser.update({ profile_pic: profile_pic_path });
-            }
-
-            // Create a Designer or Printer Owner based on sellerType
-            let seller;
-            if (sellerType === "Designer") {
-                seller = await Designer.create({
-                    user_id: newUser.user_id,
-                    cnic_number,
-                    cnic_pic: cnic_pic_path,
-                    bio,
-                });
-            } else if (sellerType === "Printer Owner") {
-                seller = await PrinterOwner.create({
-                    user_id: newUser.user_id,
-                    cnic_number,
-                    cnic_pic: cnic_pic_path,
-                    bio,
-                });
-            }
-
-            res.status(201).json({
-                message: "User and Seller created successfully",
-                data: { newUser, seller },
-            });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: "Internal Server Error" });
+        // Update the newUser with the profile_pic path
+        if (profile_pic_path) {
+            await newUser.update({ profile_pic: profile_pic_path });
         }
-    });
+
+        // Create a Designer or Printer Owner based on sellerType
+        let seller;
+        if (sellerType === "Designer") {
+            seller = await Designer.create({
+                user_id: newUser.user_id,
+                cnic_number,
+                cnic_pic: cnic_pic_path,
+                bio,
+            });
+        } else if (sellerType === "Printer Owner") {
+            seller = await PrinterOwner.create({
+                user_id: newUser.user_id,
+                cnic_number,
+                cnic_pic: cnic_pic_path,
+                bio,
+            });
+        }
+
+        res.status(201).json({
+            message: "User and Seller created successfully",
+            data: { newUser, seller },
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
+
 
 router.post("/login", async(req, res) => {
     const { email, password } = req.body;

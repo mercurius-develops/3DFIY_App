@@ -23,7 +23,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import axios from "axios";
 
-export const ModelDetail = () => {
+export const ModelDetail1 = () => {
   const { modelId } = useParams();
   const [model, setModel] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -110,9 +110,8 @@ export const ModelDetail = () => {
   const [image, setImage] = useState("image1");
 
   const images = {
-    image1: "/models/car1.jpg",
-    image2: "/models/car2.jpg",
-    image3: "/models/car3.jpg", // You can add more images as needed
+    image1: "/models/nade.jpg",
+    image2: "/models/nade2.jpg",
   };
 
   return (
@@ -215,7 +214,7 @@ export const ModelDetail = () => {
                     }`}
                   >
                     <img
-                      src="/models/car1.jpg"
+                      src="/models/nade.jpg"
                       className="object-cover rounded-lg opacity-50 hover:opacity-100 duration-300"
                       alt="Car 1"
                     />
@@ -231,25 +230,9 @@ export const ModelDetail = () => {
                     }`}
                   >
                     <img
-                      src="/models/car2.jpg"
+                      src="/models/nade2.jpg"
                       className="object-cover rounded-lg opacity-50 hover:opacity-100 duration-300"
                       alt="Car 2"
-                    />
-                  </a>
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setImage("image3");
-                    }}
-                    className={`w-44 rounded-lg ${
-                      image === "image3" ? "border-blue-500" : ""
-                    }`}
-                  >
-                    <img
-                      src="/models/car3.jpg"
-                      className="object-cover rounded-lg opacity-50 hover:opacity-100 duration-300"
-                      alt="Car 3"
                     />
                   </a>
                 </div>
@@ -265,22 +248,24 @@ export const ModelDetail = () => {
             </div>
             <div className="w-1/2 ml-4 mt-14">
               <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-semibold">Koenigsegg Agera</h1>
+                <h1 className="text-3xl font-semibold">
+                  M26 Grenade Game Weapon
+                </h1>
                 <p className="text-xl font-semibold text-gray-800 bg-gray-300 py-1 px-5 rounded-full">
-                  $50
+                  $25
                 </p>
               </div>
               <div className="flex">
                 <div className="flex items-center">
                   <img
-                    src="/icon.png"
+                    src="/logo192.png"
                     className="h-14 -mt-1 rounded-full border-2 border-green-600"
                     alt=""
                   />
                   <div className="pt-4">
                     <div className="ml-2">
-                      <p className="font-medium">Anees ur Rehman</p>
-                      <p className="font-normal">Islamabad, PK</p>
+                      <p className="font-medium">Ahmed</p>
+                      <p className="font-normal">Wah Cantt, PK</p>
                     </div>
                     <div className="ml-2 -mt-1">
                       <FontAwesomeIcon
@@ -311,13 +296,37 @@ export const ModelDetail = () => {
               <div className="mt-4">
                 <h3 className="text-lg font-semibold mb-2">Description</h3>
                 <p className="text-justify">
-                  This is a meticulously crafted, low-poly model of the
-                  Koenigsegg Agera One, designed and rendered using Blender,
-                  specifically with the Cycles rendering engine. The model is
-                  optimized for game use, available in the FBX format, and
-                  includes a low-poly interior to enhance realism. The attention
-                  to detail ensures that the model maintains visual fidelity
-                  while being efficient for real-time applications.
+                  It is designed to be thrown by hand and explode upon impact,
+                  releasing shrapnel that can injure or kill enemy personnel.
+                  The M26 has a lethal radius of approximately 15 meters and can
+                  be used in both offensive and defensive operations. For
+                  explosive military weapons, anti-tank operations, landmine
+                  weapons, and grenade weapons promotional or advertising
+                  projects. M26 Grenade Game Weapon is a high quality, photo
+                  real 3d model that will enhance detail and realism to any of
+                  your rendering projects. The model has a fully textured,
+                  detailed design that allows for close-up renders, and was
+                  originally modeled in 3ds Max 2014 and rendered with V-Ray.
+                  Renders have no postprocessing! Hope you like it! 
+                  <br />
+                  Features: - High quality polygonal model, has real dimensions.
+                  Easy to merge into your scene. - Units: cm - The model was
+                  created with the optimal number of polygons. (The Meshsmooth
+                  modifier is assigned to the original mesh. Easy to increase
+                  mesh resolution if necessary.) - All the objects come with
+                  complete UVs - All textures and materials are included and
+                  mapped. (All colors can be easily modified.) - All objects are
+                  logically named and grouped for ease of objects selection and
+                  scene management. - No part-name confusion when importing
+                  several models into a scene. - No cleaning up necessary (Model
+                  does not include any backgrounds or scenes used in preview
+                  images.) - just drop model into your scene. - No special
+                  plugin needed to open scene. ***** File Formats: - 3ds Max
+                  2014 V - Ray and standard materials scenes - Blender 2.8 Eevee
+                  materials scene - Maya 2016 V-Ray, Hardware and Redshift
+                  materials scenes - Cinema 4D R17 V-Ray and Standard materials
+                  scene - Modo 10.2 Standard materials scene - OBJ, 3DS, FBX
+                  (Multi Formats)
                 </p>
               </div>
 
@@ -338,8 +347,7 @@ export const ModelDetail = () => {
       </div>
 
       <div className="mt-24">
-
-      <Footer />
+        <Footer />
       </div>
     </div>
   );

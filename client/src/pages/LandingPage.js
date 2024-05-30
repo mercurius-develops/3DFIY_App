@@ -112,7 +112,7 @@ export const LandingPage = () => {
         </div>
       </div>
 
-      <div className="container">asd</div>
+      <div className="max-w-7xl"></div>
       <Footer />
     </body>
   );

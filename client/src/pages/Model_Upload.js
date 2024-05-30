@@ -13,7 +13,7 @@ import { useCookies } from "react-cookie";
 import { jwtDecode, InvalidTokenError } from "jwt-decode";
 import { Navbar } from "../components/Navbar";
 import { Navlinks } from "../components/Navlinks";
-import { NavBtn } from "../components/NavBtn";
+import { Profile } from "../components/Profile";
 import { Footer } from "../components/Footer";
 
 export const Model_Upload = () => {
@@ -235,7 +235,7 @@ console.log(isFree, "ifgee")
         <div className="flex justify-between">
           <Navbar />
           <div className="my-auto">
-            <NavBtn />
+            <Profile />
           </div>
         </div>
         <Navlinks />

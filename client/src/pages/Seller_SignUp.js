@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "../styles/Auth.module.css";
-
+import { useNavigate } from 'react-router-dom';
 import {
   faCheck,
   faTimes,
@@ -8,7 +8,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export const User_SignUp = () => {
+export const Seller_SignUp = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
@@ -19,6 +19,8 @@ export const User_SignUp = () => {
     location: "",
     phoneNo: "",
     profilePic: null,
+    cnicPic: null,
+    bio: null,
   });
   const [errors, setErrors] = useState({});
   const userRef = useRef(null);
@@ -39,6 +41,8 @@ export const User_SignUp = () => {
     });
   };
 
+
+  const navigate = useNavigate();
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     setFormData({
@@ -223,7 +227,7 @@ export const User_SignUp = () => {
           3Dify
         </h1>
 
-        <p className="text-xs ">Secure Register</p>
+        <p className="text-xs ">Secure Login</p>
       </div>
       <div className="flex flex-row justify-between ">
         <div className="w-1/2 flex items-center justify-center h-screen bg-gray-600 text-center">
@@ -531,7 +535,10 @@ export const User_SignUp = () => {
 
         <div className="w-1/2 -mt-12 flex flex-col items-center justify-center h-screen">
           <div className="sm:mx-auto sm:w-full sm:max-w-sm mt-24">
-            <h2 className="mt-4 text-center text-2xl font-bold tracking-tight text-gray-900">
+            <h1 className="text-center text-[#539e60] font-semibold text-2xl">
+              Become a Seller
+            </h1>
+            <h2 className="mt-1 text-center text-2xl font-semibold mb-1 tracking-tight ">
               Sign up to get started
             </h2>
           </div>
@@ -574,6 +581,23 @@ export const User_SignUp = () => {
                     onChange={handleChange}
                     className="pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                </div>
+
+                <div class="justify-center mt-4">
+                  <label
+                    htmlFor="sellerType"
+                    className="block text-sm font-medium leading-6 text-gray-900"
+                  >
+                    Select Seller Type
+                  </label>
+                  <select
+                    id="sellerType"
+                    name="sellerType"
+                    class="pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  >
+                    <option value="printerOwner">Printer Owner</option>
+                    <option value="designer">3D Model Designer</option>
+                  </select>
                 </div>
 
                 <div>
@@ -660,23 +684,6 @@ export const User_SignUp = () => {
                     Log In
                   </a>
                 </p>
-
-                <div className="flex gap-3 justify-between mt-4 ">
-                  <button
-                    onClick={() => (window.location.href = "/seller-signup")}
-                    className="py-2 w-1/2 bg-gray-600 text-white rounded-md"
-                  >
-                    Sign Up as Designer
-                  </button>
-                  <button
-                    onClick={() =>
-                      (window.location.href = "/seller-signup")
-                    }
-                    className="w-1/2 py-2 bg-gray-600 text-white rounded-md"
-                  >
-                    Sign Up as Printer
-                  </button>
-                </div>
               </form>
             ) : (
               <form className="space-y-6" onSubmit={handleSubmit}>
@@ -716,6 +723,22 @@ export const User_SignUp = () => {
 
                 <div>
                   <label
+                    htmlFor="cnicPic"
+                    className="block text-sm font-medium leading-6 text-gray-900"
+                  >
+                    Upload CNIC Pic
+                  </label>
+                  <input
+                    type="file"
+                    id="cnincPic"
+                    name="cnicPic"
+                    onChange={handleFileChange}
+                    className="mt-1 pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                </div>
+
+                <div>
+                  <label
                     htmlFor="phoneNo"
                     className="block text-sm font-medium leading-6 text-gray-900"
                   >
@@ -741,6 +764,9 @@ export const User_SignUp = () => {
                     Back
                   </button>
                   <button
+                    onClick={() => {
+                      navigate("/Model_Upload");
+                    }}
                     type="submit"
                     className="w-1/2 py-2 bg-[#539e60] text-white rounded-md"
                   >
